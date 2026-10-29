@@ -1,0 +1,14 @@
+[
+  {
+    "booking_id": "B231DC",
+    "table_id": "Bàn 01",
+    "customer_name": "khang",
+    "customer_phone": "0123123232",
+    "booking_date": "2026-08-26",
+    "booking_time": "18:00",
+    "guest_count": 1,
+    "status": "Đã xác nhận",
+    "pre_orders": [],
+    "deposit_amount": 120000
+  }
+]

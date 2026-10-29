@@ -1,0 +1,14 @@
+[
+  {
+    "username": "letan",
+    "password": "123",
+    "full_name": "Lê Văn Tân",
+    "role": "Lễ tân"
+  },
+  {
+    "username": "quanly",
+    "password": "123",
+    "full_name": "Nguyễn Quản Lý",
+    "role": "Quản lý"
+  }
+]

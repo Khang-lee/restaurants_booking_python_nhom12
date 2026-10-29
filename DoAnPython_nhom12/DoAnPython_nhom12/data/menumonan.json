@@ -1,0 +1,72 @@
+[
+  {
+    "id": "M01",
+    "name": "Cơm chiên hải sản",
+    "price": 65000,
+    "category": "Món chính",
+    "image": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500"
+  },
+  {
+    "id": "M02",
+    "name": "Lẩu thái hải sản",
+    "price": 250000,
+    "category": "Lẩu",
+    "image": "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500"
+  },
+  {
+    "id": "M03",
+    "name": "Bò lúc lắc",
+    "price": 120000,
+    "category": "Món chính",
+    "image": "https://images.unsplash.com/photo-1544025162-d76694265947?w=500"
+  },
+  {
+    "id": "M04",
+    "name": "Mì xào hải sản",
+    "price": 70000,
+    "category": "Món chính",
+    "image": "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500"
+  },
+  {
+    "id": "M05",
+    "name": "Cánh gà chiên nước mắm",
+    "price": 85000,
+    "category": "Khai vị",
+    "image": "https://images.unsplash.com/photo-1562967914-608f82629710?w=500"
+  },
+  {
+    "id": "M06",
+    "name": "Gỏi ngó sen tôm thịt",
+    "price": 95000,
+    "category": "Khai vị",
+    "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500"
+  },
+  {
+    "id": "M07",
+    "name": "Mực hấp gừng",
+    "price": 135000,
+    "category": "Hải sản",
+    "image": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500"
+  },
+  {
+    "id": "M08",
+    "name": "Trà đào cam sả",
+    "price": 35000,
+    "category": "Đồ uống",
+    "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500"
+  },
+  {
+    "id": "M09",
+    "name": "Bia Heineken",
+    "price": 25000,
+    "category": "Đồ uống",
+    "image": "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=500"
+  },
+  {
+    "id": "M10",
+    "name": "Nước cam ép",
+    "price": 40000,
+    "category": "Đồ uống",
+    "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500"
+  }
+]

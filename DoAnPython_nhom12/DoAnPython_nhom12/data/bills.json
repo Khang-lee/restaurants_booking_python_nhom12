@@ -1,0 +1,36 @@
+[
+  {
+    "id": "BILL-77D1AA",
+    "table_name": "Bàn 02",
+    "customer_name": "Khách vãng lai",
+    "total_amount": 130000,
+    "payment_method": "Tiền mặt",
+    "items": [
+      {
+        "name": "Cơm chiên hải sản",
+        "qty": 2,
+        "price": 65000,
+        "total": 130000
+      }
+    ],
+    "created_at": "2026-08-26 12:57:18",
+    "status": "Đã thanh toán"
+  },
+  {
+    "id": "BILL-3872DF",
+    "table_name": "Bàn VIP 01",
+    "customer_name": "khang",
+    "total_amount": 0,
+    "payment_method": "Chuyển khoản (QR)",
+    "items": [
+      {
+        "name": "Cơm chiên hải sản",
+        "qty": 2,
+        "price": 65000,
+        "total": 130000
+      }
+    ],
+    "created_at": "2026-08-26 13:00:44",
+    "status": "Đã thanh toán"
+  }
+]

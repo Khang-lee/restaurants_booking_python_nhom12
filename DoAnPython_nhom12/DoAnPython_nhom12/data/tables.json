@@ -1,0 +1,43 @@
+[
+  {
+    "id": "T01",
+    "name": "Bàn 01",
+    "area": "Tầng 1",
+    "capacity": 4,
+    "status": "Trống",
+    "x": 140,
+    "y": 20,
+    "bookings": [],
+    "orders": []
+  },
+  {
+    "id": "T02",
+    "name": "Bàn 02",
+    "area": "Tầng 1",
+    "capacity": 4,
+    "status": "Trống",
+    "x": 280,
+    "y": 20,
+    "bookings": [],
+    "orders": []
+  },
+  {
+    "id": "T03",
+    "name": "Bàn VIP 01",
+    "area": "Phòng VIP",
+    "capacity": 8,
+    "status": "Trống",
+    "x": 40,
+    "y": 40,
+    "bookings": [
+      {
+        "customer": "123",
+        "phone": "12312312322",
+        "guests": 8,
+        "deposit": 960000,
+        "time": "2026-08-26 18:00"
+      }
+    ],
+    "orders": []
+  }
+]
