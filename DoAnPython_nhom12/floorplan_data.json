@@ -1,0 +1,64 @@
+[
+  {
+    "id": "T01",
+    "name": "Bàn 01",
+    "area": "Tầng 1",
+    "capacity": 4,
+    "status": "Trống",
+    "x": 40,
+    "y": 40,
+    "bookings": [],
+    "orders": []
+  },
+  {
+    "id": "T02",
+    "name": "Bàn 02",
+    "area": "Tầng 1",
+    "capacity": 4,
+    "status": "Trống",
+    "x": 200,
+    "y": 40,
+    "bookings": [],
+    "orders": []
+  },
+  {
+    "id": "T03",
+    "name": "Bàn 03",
+    "area": "Tầng 1",
+    "capacity": 2,
+    "status": "Trống",
+    "x": 360,
+    "y": 40,
+    "bookings": [],
+    "orders": []
+  },
+  {
+    "id": "VIP01",
+    "name": "Bàn VIP 01",
+    "area": "Phòng VIP",
+    "capacity": 8,
+    "status": "Đang phục vụ",
+    "x": 80,
+    "y": 20,
+    "bookings": [],
+    "orders": [
+      {
+        "name": "Lẩu thái hải sản",
+        "qty": 1,
+        "price": 250000,
+        "total": 250000
+      }
+    ]
+  },
+  {
+    "id": "VIP02",
+    "name": "Bàn VIP 02",
+    "area": "Phòng VIP",
+    "capacity": 10,
+    "status": "Trống",
+    "x": 220,
+    "y": 20,
+    "bookings": [],
+    "orders": []
+  }
+]
