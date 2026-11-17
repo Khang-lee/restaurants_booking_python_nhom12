@@ -123,25 +123,38 @@ Hệ thống hỗ trợ phân quyền người dùng giữa **Quản lý** và *
 
 ---
 
-## 👥 6. Bảng Phân Công Công Việc Thành Viên (Nhóm 12)
+Dưới đây là bảng phân công công việc đã được cập nhật chuẩn xác dành cho **3 thành viên trong nhóm**, chèn sẵn các dòng trống gọn gàng để bạn có thể điền thông tin:
 
-| STT | Họ và Tên | Vai trò / Nhiệm vụ chính | Các phân hệ đảm nhận | Tỷ lệ hoàn thành |
+---
+
+Xin lỗi bạn nhé! Để phần báo cáo, đồ án hoặc tài liệu của bạn thật chi tiết, đầy đủ và xứng đáng với khối lượng công việc lớn mà bạn đã đảm nhận, dưới đây là danh sách toàn bộ các hạng mục công nghệ, kiến trúc và tính năng cốt lõi mà **Lê Nguyên Khang** đã thực hiện trong dự án:
+
+---
+
+Dạ đúng rồi ạ! Để phân công công việc trong báo cáo hoặc tài liệu đồ án của nhóm thật chính xác, rõ ràng và đúng với thực tế phân chia, chúng ta có thể điều chỉnh lại **Bảng Phân Công Công Việc** cho 3 thành viên như sau:
+
+---
+
+## 👥 Bảng Phân Công Công Việc Thành Viên (Nhóm 12)
+
+| STT | Họ và Tên | Vai trò / Nhiệm vụ chính | Các phân hệ & Tính năng chi tiết đảm nhận | Tỷ lệ hoàn thành |
 | --- | --- | --- | --- | --- |
-| **1** | **Nguyễn Ngọc Lan Tường** *(Nhóm trưởng)* | • Thiết kế kiến trúc hệ thống (MVC)<br>
+| **1** | **Lê Nguyên Khang** *(Nhóm trưởng)* | • Thiết kế kiến trúc tổng thể hệ thống (MVC)<br>
 
-<br>• Xây dựng Logic Backend & Xử lý tệp JSON<br>
+<br>• Xây dựng tầng Logic Backend & Quản lý dữ liệu JSON<br>
 
-<br>• Tích hợp cơ chế bảo mật và phân quyền | • Quản lý Đặt bàn (`Booking`)<br>
+<br>• Lập trình thuật toán nghiệp vụ & xử lý ngoại lệ<br>
 
-<br>• Chuyển bàn trực tiếp & Đồng bộ JSON<br>
+<br>• Quản lý mã nguồn Git & Tài liệu kỹ thuật | • **Sơ đồ bàn trực quan (`Floorplan` Canvas kéo thả):** Xây dựng giao diện và logic kéo thả bàn theo khu vực, cập nhật trạng thái thời gian thực.<br>
 
-<br>• Hệ thống Đăng nhập (`Auth`) | 100% |
-| **2** | **Thành viên Nhóm** | • Thiết kế giao diện người dùng (UI/UX)<br>
+<br>• **Phân hệ Đặt bàn (`Booking`):** Lập trình logic kiểm tra trùng lịch (khoảng cách tối thiểu 30 phút), ràng buộc tiền cọc tối thiểu (50.000 VNĐ/khách), tự động hủy đơn quá 45 phút, tích hợp `tkcalendar.DateEntry`.<br>
 
-<br>• Lập trình các màn hình danh sách & bảng dữ liệu<br>
+<br>• **Tính năng Chuyển bàn & Đồng bộ dữ liệu:** Xây dựng cơ chế chuyển bàn mượt mà, đồng bộ trạng thái giữa `tables.json` và `bookings.json`.<br>
 
-<br>• Kiểm thử và xử lý ngoại lệ giao diện | • Sơ đồ bàn trực quan (`Floorplan`)<br>
+<br>• **Hệ thống Đăng nhập & Phân quyền:** Xây dựng `AuthService` và phân tách quyền Quản lý / Lễ tân. | 100% |
+| **2** | **[Nhập tên thành viên 2]** | • Thiết kế giao diện người dùng (UI/UX)<br>
 
-<br>• Gọi món & Quản lý thực đơn (`Order`)<br>
+<br>• Lập trình màn hình chức năng thanh toán và quản lý hóa đơn | • **Giao diện Hóa đơn & Thanh toán (`Bill`):** Xây dựng màn hình danh sách hóa đơn, giao diện tính tiền, trừ tiền cọc tự động, xuất hóa đơn và lưu trữ lịch sử vào `bills.json`. | 100% |
+| **3** | **[Nhập tên thành viên 3]** | • Thiết kế giao diện báo cáo & trực quan hóa dữ liệu<br>
 
-<br>• Quản lý Hóa đơn & Thanh toán (`Bill`) | 100% |
+<br>• Xây dựng module thống kê kinh doanh | • **Giao diện Thống kê & Báo cáo:** Xây dựng giao diện thống kê tỷ lệ sử dụng bàn (tỷ lệ lấp đầy), thống kê doanh thu và số lượng lượt thanh toán theo phương thức. | 100% |
