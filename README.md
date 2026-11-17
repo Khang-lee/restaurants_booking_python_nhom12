@@ -112,7 +112,6 @@ Hệ thống hỗ trợ phân quyền người dùng giữa **Quản lý** và *
 | **Quản lý** | `quanly` | `123456` | Thêm/Sửa/Xóa bàn, Kéo thả cố định vị trí bàn, Xóa lịch đặt, Xem báo cáo doanh thu & tỷ lệ lấp đầy bàn. |
 | **Lễ tân** | `letan` | `123456` | Xem sơ đồ, Đặt bàn, Gọi món, Thanh toán hóa đơn, Tìm kiếm lịch đặt bàn. |
 
----
 
 ## 📋 5. Các Tính Năng Chính
 
@@ -120,20 +119,6 @@ Hệ thống hỗ trợ phân quyền người dùng giữa **Quản lý** và *
 2. **Quản lý Đặt bàn & DateEntry:** Tích hợp lịch chọn ngày trực quan (`tkcalendar.DateEntry`), kiểm tra chống trùng lịch, tự động tính cọc tối thiểu (50,000 VNĐ/khách), tự động hủy đơn quá 45 phút nếu khách không đến.
 3. **Gọi món & Chuyển bàn:** Chọn món ăn nhanh chóng, chuyển bàn linh hoạt giữa các bàn trống, tự động đồng bộ trạng thái bàn giữa `tables.json` và `bookings.json`.
 4. **Thanh toán & Báo cáo:** Thanh toán hóa đơn, trừ tiền cọc tự động, giải phóng bàn và lưu trữ lịch sử giao dịch vào `bills.json`.
-
----
-
-Dưới đây là bảng phân công công việc đã được cập nhật chuẩn xác dành cho **3 thành viên trong nhóm**, chèn sẵn các dòng trống gọn gàng để bạn có thể điền thông tin:
-
----
-
-Xin lỗi bạn nhé! Để phần báo cáo, đồ án hoặc tài liệu của bạn thật chi tiết, đầy đủ và xứng đáng với khối lượng công việc lớn mà bạn đã đảm nhận, dưới đây là danh sách toàn bộ các hạng mục công nghệ, kiến trúc và tính năng cốt lõi mà **Lê Nguyên Khang** đã thực hiện trong dự án:
-
----
-
-Dạ đúng rồi ạ! Để phân công công việc trong báo cáo hoặc tài liệu đồ án của nhóm thật chính xác, rõ ràng và đúng với thực tế phân chia, chúng ta có thể điều chỉnh lại **Bảng Phân Công Công Việc** cho 3 thành viên như sau:
-
----
 
 ## 👥 Bảng Phân Công Công Việc Thành Viên (Nhóm 12)
 
