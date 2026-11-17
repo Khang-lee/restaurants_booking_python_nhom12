@@ -34,5 +34,17 @@
     "bookings": [],
     "orders": [],
     "start_time": null
+  },
+  {
+    "id": "T-5351BA",
+    "name": "Bàn mới 4",
+    "area": "Phòng VIP",
+    "capacity": 4,
+    "status": "Trống",
+    "x": 200,
+    "y": 40,
+    "bookings": [],
+    "orders": [],
+    "start_time": null
   }
 ]

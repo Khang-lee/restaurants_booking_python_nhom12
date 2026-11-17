@@ -1,80 +1,209 @@
-import json
 import os
-import uuid
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import datetime
+from controllers.order_controller import OrderController
+
 
 class OrderMenuView(tk.Frame):
     def __init__(self, parent=None, table=None, on_close=None, *args, **kwargs):
-        super().__init__(parent, bg="#dcdde1", *args, **kwargs)
+        super().__init__(parent, bg="#f5f6fa", *args, **kwargs)
         self.table = table
         self.on_close = on_close
+        self.controller = OrderController(table=table)
+        self.timer_job = None
+        self.notified_30min = False
 
-        CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-        data_dir = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", "data"))
-        if not os.path.exists(data_dir):
-            data_dir = os.path.abspath(os.path.join(CURRENT_DIR, "..", "data"))
+        # Các biến lưu tham chiếu widget thông báo để cập nhật trực tiếp (tránh chập chờn)
+        self._bell_content_box = None
+        self._lbl_bell_msg = None
+        self._btn_confirm_arrival = None
 
-        self.MENU_FILE = os.path.join(data_dir, "menumonan.json")
-        self.TABLE_FILE = os.path.join(data_dir, "tables.json")
-        self.BILL_FILE = os.path.join(data_dir, "bills.json")
-
-        self.menu_items = []
-        self.current_order = []
-
-        self.load_menu_data()
-        self.load_current_table_orders()
         self.setup_ui()
+        self.start_order_timer()
 
-    def load_menu_data(self):
-        if os.path.exists(self.MENU_FILE):
-            try:
-                with open(self.MENU_FILE, "r", encoding="utf-8") as f:
-                    self.menu_items = json.load(f)
-            except Exception as e:
-                print(f"Lỗi đọc file menu: {e}")
+    def handle_close(self):
+        if self.timer_job:
+            self.after_cancel(self.timer_job)
+            self.timer_job = None
+            
+        self.controller.save_on_exit()
+        if self.on_close:
+            self.on_close()
 
-    def load_current_table_orders(self):
-        if self.table and hasattr(self.table, 'orders') and self.table.orders:
-            self.current_order = [dict(item) for item in self.table.orders]
+    def destroy(self):
+        if self.timer_job:
+            self.after_cancel(self.timer_job)
+        super().destroy()
+
+    def start_order_timer(self):
+        if self.winfo_exists():
+            elapsed = self.controller.get_elapsed_time()
+            start_t = getattr(self.table, 'start_time', '--:--:--')
+            if start_t and len(str(start_t)) > 10:
+                start_t = str(start_t).split(" ")[1]
+            
+            if hasattr(self, 'lbl_realtime_clock') and self.lbl_realtime_clock.winfo_exists():
+                self.lbl_realtime_clock.config(text=f"🕒 Giờ vào: {start_t} | ⏱️ Đang dùng: {elapsed}")
+                
+            self.update_booking_bell_banner()
+            
+            self.timer_job = self.after(1000, self.start_order_timer)
+
+    def update_booking_bell_banner(self):
+        """Hiển thị và cập nhật thông tin lịch đặt (chống chập chờn, nhấp nháy hoàn toàn)"""
+        if not hasattr(self, 'booking_alert_frame') or not self.booking_alert_frame.winfo_exists():
+            return
+            
+        # Khởi tạo khung giao diện thông báo 1 LẦN DUY NHẤT
+        if self._bell_content_box is None or not self._bell_content_box.winfo_exists():
+            for widget in self.booking_alert_frame.winfo_children():
+                widget.destroy()
+                
+            self._bell_content_box = tk.Frame(self.booking_alert_frame, bg=self.booking_alert_frame.cget("bg"))
+            self._bell_content_box.pack(fill="x", padx=5, pady=4)
+            
+            self._lbl_bell_msg = tk.Label(
+                self._bell_content_box, text="", 
+                font=("Segoe UI", 9, "bold"), anchor="w"
+            )
+            self._lbl_bell_msg.pack(side="left", fill="x", expand=True)
+            
+            self._btn_confirm_arrival = tk.Button(
+                self._bell_content_box, text="✅ Xác nhận khách đến", bg="#27ae60", fg="white",
+                font=("Segoe UI", 8, "bold"), relief="flat", cursor="hand2", padx=8, pady=2
+            )
+
+        booking = self.controller.get_nearest_booking_info()
+        
+        if booking:
+            diff = booking["diff_mins"]
+            c_name = booking["customer_name"]
+            b_time = booking["booking_time"]
+            guests = booking["guests"]
+            b_id = booking.get("booking_id")
+            b_status = booking.get("status", "Đã xác nhận")
+
+            if b_status == "Đang phục vụ":
+                bg_color = "#d4efdf"
+                msg_text = f"🟢 KHÁCH ĐANG DÙNG: '{c_name}' lúc {b_time} ({guests} khách)"
+                fg_color = "#196f3d"
+            elif 0 <= diff <= 30:
+                bg_color = "#f9ebe9"
+                msg_text = f"🔔 CẢNH BÁO: Khách '{c_name}' đặt lúc {b_time} ({guests} khách) - Còn {diff} phút!"
+                fg_color = "#c0392b"
+                
+                if not self.notified_30min:
+                    self.notified_30min = True
+                    messagebox.showwarning(
+                        "🔔 NHẮC LỊCH ĐẶT BÀN", 
+                        f"Bàn {getattr(self.table, 'name', 'này')} sắp có khách đặt tới!\n\n• Khách hàng: {c_name}\n• Số lượng: {guests} khách\n• Giờ hẹn: {b_time}\n(Còn lại khoảng {diff} phút)"
+                    )
+            elif diff < 0:
+                bg_color = "#fcf3cf"
+                msg_text = f"🔔 QUÁ GIỜ: Khách '{c_name}' lúc {b_time} ({guests} khách) - Quá {abs(diff)} phút!"
+                fg_color = "#d35400"
+            else:
+                bg_color = "#e8f8f5"
+                msg_text = f"🔔 Lịch đặt: Khách '{c_name}' lúc {b_time} ({guests} khách) - Còn {diff} phút"
+                fg_color = "#16a085"
+
+            # Cập nhật mượt mà bằng config, không dùng destroy lại
+            self.booking_alert_frame.config(bg=bg_color)
+            self._bell_content_box.config(bg=bg_color)
+            self._lbl_bell_msg.config(text=msg_text, bg=bg_color, fg=fg_color)
+
+            if b_status != "Đang phục vụ":
+                self._btn_confirm_arrival.config(command=lambda bid=b_id: self.confirm_arrival(bid))
+                if not self._btn_confirm_arrival.winfo_ismapped():
+                    self._btn_confirm_arrival.pack(side="right", padx=5)
+            else:
+                if self._btn_confirm_arrival.winfo_ismapped():
+                    self._btn_confirm_arrival.pack_forget()
         else:
-            self.current_order = []
+            self.booking_alert_frame.config(bg="#f5f6fa")
+            self._bell_content_box.config(bg="#f5f6fa")
+            self._lbl_bell_msg.config(
+                text="🔔 Không có lịch đặt bàn nào khác trong hôm nay", 
+                font=("Segoe UI", 8, "italic"), bg="#f5f6fa", fg="#95a5a6"
+            )
+            if self._btn_confirm_arrival.winfo_ismapped():
+                self._btn_confirm_arrival.pack_forget()
+
+    def confirm_arrival(self, booking_id):
+        """Xử lý khi bấm nút Xác nhận khách đến"""
+        success, msg = self.controller.confirm_customer_arrival(booking_id)
+        if success:
+            messagebox.showinfo("Thành công", msg)
+            self.update_booking_bell_banner()
+            if hasattr(self, 'start_order_timer'):
+                self.start_order_timer()
+        else:
+            messagebox.showerror("Lỗi", msg)
 
     def setup_ui(self):
-        left_frame = tk.Frame(self, bg="#f5f6fa", width=550)
-        left_frame.pack(side="left", fill="both", expand=True, padx=(5, 2), pady=5)
+        top_bar = tk.Frame(self, bg="white", padx=15, pady=10)
+        top_bar.pack(fill="x", padx=10, pady=(10, 5))
 
-        right_frame = tk.Frame(self, bg="white", width=420)
-        right_frame.pack(side="right", fill="both", padx=(2, 5), pady=5)
+        table_title = getattr(self.table, "name", "BÀN TRỐNG") if self.table else "BÀN TRỐNG"
+        capacity_text = f" (👤 {getattr(self.table, 'capacity', 4)} chỗ)" if self.table else ""
+        
+        tk.Label(
+            top_bar, 
+            text=f"🍽️ GỌI MÓN CHO: {str(table_title).upper()}{capacity_text}", 
+            font=("Segoe UI", 13, "bold"), 
+            bg="white", 
+            fg="#2c3e50"
+        ).pack(side="left")
 
-        # 1. Thanh Lọc Danh Mục
-        cat_frame = tk.Frame(left_frame, bg="#2980b9", padx=3, pady=3)
-        cat_frame.pack(fill="x", padx=5, pady=(5, 0))
+        if self.on_close:
+            tk.Button(
+                top_bar, text="⬅️ Quay lại Sơ đồ bàn (Tự động lưu)", 
+                bg="#2980b9", fg="white", font=("Segoe UI", 9, "bold"), 
+                relief="flat", cursor="hand2", padx=12, pady=5,
+                command=self.handle_close
+            ).pack(side="right")
 
-        self.selected_category = "Tất cả"
-        categories = ["Tất cả", "Món ăn", "Đồ uống", "Khác"]
+        # Nút chuyển bàn tích hợp gọn gàng ở top_bar
+        tk.Button(
+            top_bar, text="🔄 Chuyển bàn", bg="#e67e22", fg="white",
+            font=("Segoe UI", 9, "bold"), relief="flat", cursor="hand2", padx=10, pady=5,
+            command=self.open_transfer_dialog
+        ).pack(side="right", padx=5)
+
+        main_content = tk.Frame(self, bg="#f5f6fa")
+        main_content.pack(fill="both", expand=True, padx=10, pady=5)
+
+        left_frame = tk.Frame(main_content, bg="#f5f6fa")
+        left_frame.pack(side="left", fill="both", expand=True, padx=(0, 5), pady=0)
+
+        right_frame = tk.Frame(main_content, bg="white", width=460)
+        right_frame.pack(side="right", fill="both", padx=(5, 0), pady=0)
+        right_frame.pack_propagate(False)
+
+        # ==================== CỘT TRÁI: MENU & DANH MỤC ====================
+        cat_frame = tk.Frame(left_frame, bg="#2980b9", padx=4, pady=4)
+        cat_frame.pack(fill="x", pady=(0, 5))
+
+        categories = ["Tất cả", "Món ăn", "Đồ uống", "Khác", "📅 Đặt bàn"]
         for cat in categories:
             btn = tk.Button(
                 cat_frame, text=cat, font=("Segoe UI", 9, "bold"),
                 bg="#3498db" if cat == "Tất cả" else "#2980b9", fg="white",
-                relief="flat", cursor="hand2", padx=10, pady=4,
+                relief="flat", cursor="hand2", padx=10, pady=5,
                 command=lambda c=cat: self.filter_by_category(c)
             )
             btn.pack(side="left", padx=2)
 
-        # 2. Ô Tìm Kiếm Món
-        search_frame = tk.Frame(left_frame, bg="white", padx=8, pady=6)
-        search_frame.pack(fill="x", padx=5, pady=5)
+        search_frame = tk.Frame(left_frame, bg="white", padx=10, pady=8, bd=1, relief="solid")
+        search_frame.pack(fill="x", pady=(0, 5))
 
         tk.Label(search_frame, text="🔍", bg="white", font=("Segoe UI", 11)).pack(side="left")
         self.txt_search = tk.Entry(search_frame, font=("Segoe UI", 10), bd=0, bg="white")
-        self.txt_search.pack(side="left", fill="x", expand=True, padx=5)
+        self.txt_search.pack(side="left", fill="x", expand=True, padx=8)
         self.txt_search.bind("<KeyRelease>", lambda e: self.render_menu_cards())
 
-        # 3. Danh Sách Thẻ Món Ăn
         cards_container = tk.Frame(left_frame, bg="#f5f6fa")
-        cards_container.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+        cards_container.pack(fill="both", expand=True, pady=(0, 5))
 
         self.canvas_menu = tk.Canvas(cards_container, bg="#f5f6fa", highlightthickness=0)
         scroll_menu = ttk.Scrollbar(cards_container, orient="vertical", command=self.canvas_menu.yview)
@@ -90,128 +219,126 @@ class OrderMenuView(tk.Frame):
 
         self.render_menu_cards()
 
-        # ==========================================
-        # CỘT PHẢI: HÓA ĐƠN & THAO TÁC
-        # ==========================================
-        header_right = tk.Frame(right_frame, bg="#34495e", padx=10, pady=10)
+        # ==================== CỘT PHẢI: HÓA ĐƠN & CHUÔNG BÁO ====================
+        header_right = tk.Frame(right_frame, bg="#34495e", padx=12, pady=10)
         header_right.pack(fill="x")
 
-        table_title = self.table.name if self.table else "BÀN CHỌN"
-        tk.Label(header_right, text=f"📋 HÓA ĐƠN - {table_title.upper()}", font=("Segoe UI", 11, "bold"), fg="white", bg="#34495e").pack(side="left")
+        tk.Label(
+            header_right, 
+            text=f"📋 HÓA ĐƠN - {str(table_title).upper()}", 
+            font=("Segoe UI", 11, "bold"), 
+            fg="white", bg="#34495e"
+        ).pack(side="left")
+
+        self.lbl_realtime_clock = tk.Label(
+            right_frame, text="🕒 Giờ vào: --:--:-- | ⏱️ Đang dùng: 00:00:00", 
+            font=("Segoe UI", 9, "bold"), bg="#f1f2f6", fg="#2c3e50", pady=6
+        )
+        self.lbl_realtime_clock.pack(fill="x", padx=8, pady=(4, 2))
+
+        self.booking_alert_frame = tk.Frame(right_frame, bg="#f5f6fa", padx=5, pady=4, bd=1, relief="solid")
+        self.booking_alert_frame.pack(fill="x", padx=8, pady=(0, 4))
+        self.update_booking_bell_banner()
+
+        order_list_container = tk.Frame(right_frame, bg="white", padx=5, pady=5)
+        order_list_container.pack(fill="both", expand=True, padx=8, pady=5)
+
+        self.canvas_order = tk.Canvas(order_list_container, bg="white", highlightthickness=0)
+        scroll_order = ttk.Scrollbar(order_list_container, orient="vertical", command=self.canvas_order.yview)
         
-        if self.table:
-            tk.Label(header_right, text=f"👤 {self.table.capacity} chỗ", font=("Segoe UI", 9), fg="#bdc3c7", bg="#34495e").pack(side="right")
-
-        table_order_frame = tk.Frame(right_frame, bg="white", padx=5, pady=5)
-        table_order_frame.pack(fill="both", expand=True)
-
-        cols = ("name", "qty", "price", "total")
-        self.tree_order = ttk.Treeview(table_order_frame, columns=cols, show="headings", height=7)
+        self.scrollable_order_items = tk.Frame(self.canvas_order, bg="white")
+        self.scrollable_order_items.bind("<Configure>", lambda e: self.canvas_order.configure(scrollregion=self.canvas_order.bbox("all")))
         
-        self.tree_order.heading("name", text="Tên món")
-        self.tree_order.heading("qty", text="SL")
-        self.tree_order.heading("price", text="Đơn giá")
-        self.tree_order.heading("total", text="Thành tiền")
+        self.canvas_order.create_window((0, 0), window=self.scrollable_order_items, anchor="nw")
+        self.canvas_order.configure(yscrollcommand=scroll_order.set)
 
-        self.tree_order.column("name", width=130)
-        self.tree_order.column("qty", width=40, anchor="center")
-        self.tree_order.column("price", width=75, anchor="e")
-        self.tree_order.column("total", width=85, anchor="e")
+        self.canvas_order.pack(side="left", fill="both", expand=True)
+        scroll_order.pack(side="right", fill="y")
 
-        self.tree_order.bind("<<TreeviewSelect>>", self.on_order_item_selected)
-
-        scroll_tree = ttk.Scrollbar(table_order_frame, orient="vertical", command=self.tree_order.yview)
-        self.tree_order.configure(yscroll=scroll_tree.set)
-
-        self.tree_order.pack(side="left", fill="both", expand=True)
-        scroll_tree.pack(side="right", fill="y")
-
-        # Khung preview ảnh và thông tin món khi chọn ở hóa đơn
-        self.preview_frame = tk.Frame(right_frame, bg="#f8f9fa", height=65, padx=10, pady=5, bd=1, relief="solid")
-        self.preview_frame.pack(fill="x", padx=5, pady=2)
-        self.preview_frame.pack_propagate(False)
-
-        self.lbl_preview_img = tk.Label(self.preview_frame, text="🍲", font=("Segoe UI", 16), bg="#f8f9fa")
-        self.lbl_preview_img.pack(side="left", padx=5)
-
-        self.lbl_preview_text = tk.Label(self.preview_frame, text="Nhấn chọn món trong bảng trên\nđể xem ảnh & thao tác nhanh", font=("Segoe UI", 8, "italic"), bg="#f8f9fa", fg="#7f8c8d", anchor="w")
-        self.lbl_preview_text.pack(side="left", fill="x", expand=True, padx=5)
-
-        action_bar = tk.Frame(right_frame, bg="#ecf0f1", padx=10, pady=5)
-        action_bar.pack(fill="x")
-
-        tk.Button(action_bar, text="➕ Tăng", bg="#2ecc71", fg="white", font=("Segoe UI", 9, "bold"), command=self.increase_item_qty, relief="flat", padx=8).pack(side="left", padx=2)
-        tk.Button(action_bar, text="➖ Giảm", bg="#f39c12", fg="white", font=("Segoe UI", 9, "bold"), command=self.decrease_item_qty, relief="flat", padx=8).pack(side="left", padx=2)
-        tk.Button(action_bar, text="🗑️ Xóa món", bg="#e74c3c", fg="white", font=("Segoe UI", 9, "bold"), command=self.remove_item, relief="flat", padx=8).pack(side="left", padx=2)
-
-        total_frame = tk.Frame(right_frame, bg="#f8f9fa", padx=15, pady=10, bd=1, relief="solid")
-        total_frame.pack(fill="x", padx=10, pady=10)
+        total_frame = tk.Frame(right_frame, bg="#f8f9fa", padx=15, pady=8, bd=1, relief="solid")
+        total_frame.pack(fill="x", padx=8, pady=6)
 
         tk.Label(total_frame, text="TỔNG CỘNG:", font=("Segoe UI", 11, "bold"), bg="#f8f9fa", fg="#2c3e50").pack(side="left")
-        self.lbl_total_amount = tk.Label(total_frame, text="0 VNĐ", font=("Segoe UI", 14, "bold"), bg="#f8f9fa", fg="#e74c3c")
+        self.lbl_total_amount = tk.Label(total_frame, text="0 VNĐ", font=("Segoe UI", 13, "bold"), bg="#f8f9fa", fg="#e74c3c")
         self.lbl_total_amount.pack(side="right")
 
-        btn_footer = tk.Frame(right_frame, bg="white", padx=10, pady=10)
-        btn_footer.pack(fill="x")
+        btn_footer = tk.Frame(right_frame, bg="white", padx=8, pady=6)
+        btn_footer.pack(fill="x", padx=4)
 
         tk.Button(
-            btn_footer, text="💾 LƯU / ĐÓN KHÁCH", bg="#27ae60", fg="white",
-            font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2", pady=8,
-            command=self.save_order_and_serve
-        ).pack(side="left", expand=True, fill="x", padx=2)
-
-        tk.Button(
-            btn_footer, text="💳 TÍNH TIỀN", bg="#e67e22", fg="white",
+            btn_footer, text="💳 TÍNH TIỀN & THANH TOÁN", bg="#e67e22", fg="white",
             font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2", pady=8,
             command=self.checkout
         ).pack(side="left", expand=True, fill="x", padx=2)
 
-        if self.on_close:
-            tk.Button(
-                btn_footer, text="❌ THOÁT", bg="#95a5a6", fg="white",
-                font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2", pady=8,
-                command=self.on_close
-            ).pack(side="left", expand=True, fill="x", padx=2)
-
-        self.update_order_table()
+        self.update_order_display()
 
     def filter_by_category(self, cat_name):
-        self.selected_category = cat_name
+        self.controller.selected_category = cat_name
         self.render_menu_cards()
 
     def render_menu_cards(self):
         for child in self.grid_cards.winfo_children():
             child.destroy()
 
-        search_kw = self.txt_search.get().strip().lower()
-        
-        filtered = []
-        for item in self.menu_items:
-            match_cat = (self.selected_category == "Tất cả") or (item.get("category") == self.selected_category)
-            match_kw = search_kw in item.get("name", "").lower()
-            if match_cat and match_kw:
-                filtered.append(item)
+        if self.controller.selected_category == "📅 Đặt bàn":
+            bookings = self.controller.get_table_bookings()
+            if not bookings:
+                lbl = tk.Label(
+                    self.grid_cards, 
+                    text="📭 Không có lịch đặt bàn nào cho bàn này", 
+                    font=("Segoe UI", 10, "italic"), 
+                    bg="#f5f6fa", fg="#7f8c8d"
+                )
+                lbl.pack(pady=40, padx=20)
+                return
+
+            for bk in bookings:
+                card = tk.Frame(self.grid_cards, bg="white", bd=1, relief="solid", padx=12, pady=10)
+                card.pack(fill="x", padx=5, pady=5)
+                
+                b_id = bk.get("booking_id", "N/A")
+                c_name = bk.get("customer_name", "Khách")
+                phone = bk.get("customer_phone", "N/A")
+                guests = bk.get("guest_count", 1)
+                b_date = bk.get("booking_date", "")
+                b_time = bk.get("booking_time", "")
+                status = bk.get("status", "Đã xác nhận")
+                deposit = bk.get("deposit_amount", 0)
+
+                tk.Label(card, text=f"📌 Mã đặt: {b_id} | Trạng thái: {status}", font=("Segoe UI", 10, "bold"), bg="white", fg="#2980b9", anchor="w").pack(fill="x")
+                tk.Label(card, text=f"👤 Khách hàng: {c_name} (SĐT: {phone})", font=("Segoe UI", 9), bg="white", fg="#2c3e50", anchor="w").pack(fill="x", pady=2)
+                tk.Label(card, text=f"👥 Số khách: {guests} người", font=("Segoe UI", 9), bg="white", fg="#2c3e50", anchor="w").pack(fill="x")
+                tk.Label(card, text=f"🕒 Ngày giờ: {b_date} lúc {b_time}", font=("Segoe UI", 9, "bold"), bg="white", fg="#e67e22", anchor="w").pack(fill="x", pady=2)
+                if deposit:
+                    tk.Label(card, text=f"💵 Tiền cọc: {int(deposit):,} VNĐ", font=("Segoe UI", 9), bg="white", fg="#27ae60", anchor="w").pack(fill="x")
+            return
+
+        search_kw = self.txt_search.get()
+        filtered = self.controller.filter_menu(self.controller.selected_category, search_kw)
 
         cols = 3
         for idx, item in enumerate(filtered):
             r = idx // cols
             c = idx % cols
 
-            card = tk.Frame(self.grid_cards, bg="white", bd=1, relief="solid", width=150, height=130)
-            card.grid(row=r, column=c, padx=6, pady=6)
+            # Cố định kích thước card và khóa propagate để giữ kích thước mặc định đều tăm tắp
+            card = tk.Frame(self.grid_cards, bg="white", bd=1, relief="solid", width=140, height=120)
+            card.grid(row=r, column=c, padx=5, pady=5)
             card.pack_propagate(False)
+            card.grid_propagate(False)
 
             price = item.get("price", 0)
             price_text = f"{price//1000}K" if price >= 1000 else f"{price}"
-            badge = tk.Label(card, text=price_text, bg="#e74c3c", fg="white", font=("Segoe UI", 8, "bold"), padx=5)
-            badge.place(x=105, y=5)
+            badge = tk.Label(card, text=price_text, bg="#e74c3c", fg="white", font=("Segoe UI", 8, "bold"), padx=4)
+            badge.place(x=95, y=5)
 
             img_path = item.get("image", "")
             img_tk = None
             if img_path and os.path.exists(img_path):
                 try:
                     from PIL import Image, ImageTk
-                    pil_img = Image.open(img_path).resize((55, 55))
+                    pil_img = Image.open(img_path).resize((45, 45))
                     img_tk = ImageTk.PhotoImage(pil_img)
                     card.img_ref = img_tk
                 except Exception:
@@ -219,174 +346,185 @@ class OrderMenuView(tk.Frame):
 
             if img_tk:
                 lbl_img = tk.Label(card, image=img_tk, bg="white")
-                lbl_img.pack(pady=(10, 2))
+                lbl_img.pack(pady=(6, 2))
             else:
-                lbl_img = tk.Label(card, text="🍲", font=("Segoe UI", 20), bg="white")
-                lbl_img.pack(pady=(10, 2))
+                lbl_img = tk.Label(card, text="🍲", font=("Segoe UI", 16), bg="white")
+                lbl_img.pack(pady=(6, 2))
 
-            lbl_name = tk.Label(card, text=item.get("name"), font=("Segoe UI", 9, "bold"), bg="white", fg="#2c3e50", wraplength=130)
-            lbl_name.pack()
+            # Sử dụng place để cố định vị trí và diện tích vùng tên món, tránh phình to card
+            lbl_name = tk.Label(
+                card, text=item.get("name"), 
+                font=("Segoe UI", 9, "bold"), 
+                bg="white", fg="#2c3e50", 
+                wraplength=125, justify="center"
+            )
+            lbl_name.place(x=5, y=70, width=130, height=40)
 
             for widget in (card, badge, lbl_img, lbl_name):
                 widget.bind("<Button-1>", lambda e, it=item: self.add_item_to_order(it))
                 widget.config(cursor="hand2")
 
-    def on_order_item_selected(self, event):
-        selected = self.tree_order.selection()
-        if not selected: return
-        
-        item_vals = self.tree_order.item(selected[0])['values']
-        if not item_vals: return
-        
-        dish_name = item_vals[0]
-        qty = item_vals[1]
-        
-        target_dish = next((m for m in self.menu_items if m.get("name") == dish_name), None)
-        
-        self.lbl_preview_text.config(text=f"Đang chọn: {dish_name}\nSố lượng: {qty} phần", fg="#2c3e50")
-
-        if target_dish and target_dish.get("image") and os.path.exists(target_dish.get("image")):
-            try:
-                from PIL import Image, ImageTk
-                pil_img = Image.open(target_dish.get("image")).resize((40, 40))
-                img_tk = ImageTk.PhotoImage(pil_img)
-                self.lbl_preview_img.config(image=img_tk, text="")
-                self.lbl_preview_img.image = img_tk
-            except Exception:
-                self.lbl_preview_img.config(image="", text="🍲", font=("Segoe UI", 16))
-        else:
-            self.lbl_preview_img.config(image="", text="🍲", font=("Segoe UI", 16))
-
     def add_item_to_order(self, item):
-        for it in self.current_order:
-            if it["name"] == item["name"]:
-                it["qty"] += 1
-                it["total"] = it["qty"] * it["price"]
-                self.update_order_table()
-                return
+        self.controller.add_item_to_order(item)
+        self.update_order_display()
 
-        self.current_order.append({
-            "name": item["name"],
-            "qty": 1,
-            "price": item["price"],
-            "total": item["price"]
-        })
-        self.update_order_table()
+    def update_order_display(self):
+        for child in self.scrollable_order_items.winfo_children():
+            child.destroy()
 
-    def update_order_table(self):
-        for row in self.tree_order.get_children():
-            self.tree_order.delete(row)
+        if not self.controller.current_order:
+            empty_frame = tk.Frame(self.scrollable_order_items, bg="white", pady=40)
+            empty_frame.pack(fill="x")
+            tk.Label(
+                empty_frame, 
+                text="🛒 Chưa có món nào trong hóa đơn\nHãy chọn món từ menu bên trái", 
+                font=("Segoe UI", 9, "italic"), 
+                bg="white", 
+                fg="#b2bec3",
+                justify="center"
+            ).pack(fill="x")
+        else:
+            for idx, item in enumerate(self.controller.current_order):
+                row = tk.Frame(self.scrollable_order_items, bg="white", bd=1, relief="solid")
+                row.pack(fill="x", padx=4, pady=4)
+                row.configure(highlightbackground="#dfe6e9")
 
-        total_amount = 0
-        for item in self.current_order:
-            total_amount += item["total"]
-            self.tree_order.insert("", "end", values=(
-                item["name"], item["qty"], f"{item['price']:,}", f"{item['total']:,}"
-            ))
+                inner_frame = tk.Frame(row, bg="white", padx=10, pady=8)
+                inner_frame.pack(fill="both", expand=True)
 
+                left_info = tk.Frame(inner_frame, bg="white")
+                left_info.pack(side="left", fill="x", expand=True)
+
+                lbl_name = tk.Label(
+                    left_info, text=item["name"], 
+                    font=("Segoe UI", 10, "bold"), 
+                    bg="white", fg="#2c3e50", anchor="w"
+                )
+                lbl_name.pack(fill="x")
+
+                lbl_unit = tk.Label(
+                    left_info, text=f"Đơn giá: {item['price']:,}đ", 
+                    font=("Segoe UI", 8), 
+                    bg="white", fg="#b2bec3", anchor="w"
+                )
+                lbl_unit.pack(fill="x", pady=(2, 0))
+
+                right_action = tk.Frame(inner_frame, bg="white")
+                right_action.pack(side="right")
+
+                sub_total = item["total"]
+                lbl_total = tk.Label(
+                    right_action, text=f"{sub_total:,}đ", 
+                    font=("Segoe UI", 10, "bold"), 
+                    bg="white", fg="#e74c3c", anchor="e"
+                )
+                lbl_total.pack(anchor="e", pady=(0, 4))
+
+                ctrl_bar = tk.Frame(right_action, bg="white")
+                ctrl_bar.pack(anchor="e")
+
+                tk.Button(
+                    ctrl_bar, text="-", bg="#f1f2f6", fg="#2c3e50", 
+                    font=("Segoe UI", 9, "bold"), width=2, height=1,
+                    relief="flat", cursor="hand2",
+                    command=lambda i=idx: self.decrease_qty(i)
+                ).pack(side="left", padx=1)
+
+                tk.Label(
+                    ctrl_bar, text=str(item["qty"]), 
+                    font=("Segoe UI", 9, "bold"), 
+                    bg="#f8f9fa", fg="#2c3e50", width=3, 
+                    relief="solid", bd=1
+                ).pack(side="left", padx=2)
+
+                tk.Button(
+                    ctrl_bar, text="+", bg="#f1f2f6", fg="#2c3e50", 
+                    font=("Segoe UI", 9, "bold"), width=2, height=1,
+                    relief="flat", cursor="hand2",
+                    command=lambda i=idx: self.increase_qty(i)
+                ).pack(side="left", padx=1)
+
+                tk.Button(
+                    ctrl_bar, text="🗑", bg="#ffeaa7", fg="#d63031", 
+                    font=("Segoe UI", 9), width=2, height=1,
+                    relief="flat", cursor="hand2",
+                    command=lambda i=idx: self.remove_single_item(i)
+                ).pack(side="left", padx=(6, 0))
+
+        total_amount = self.controller.calculate_total()
         self.lbl_total_amount.config(text=f"{total_amount:,} VNĐ")
 
-    def increase_item_qty(self):
-        selected = self.tree_order.selection()
-        if not selected: return
-        idx = self.tree_order.index(selected[0])
-        self.current_order[idx]["qty"] += 1
-        self.current_order[idx]["total"] = self.current_order[idx]["qty"] * self.current_order[idx]["price"]
-        self.update_order_table()
+    def increase_qty(self, idx):
+        self.controller.increase_item_qty(idx)
+        self.update_order_display()
 
-    def decrease_item_qty(self):
-        selected = self.tree_order.selection()
-        if not selected: return
-        idx = self.tree_order.index(selected[0])
-        if self.current_order[idx]["qty"] > 1:
-            self.current_order[idx]["qty"] -= 1
-            self.current_order[idx]["total"] = self.current_order[idx]["qty"] * self.current_order[idx]["price"]
-        else:
-            self.current_order.pop(idx)
-        self.update_order_table()
+    def decrease_qty(self, idx):
+        self.controller.decrease_item_qty(idx)
+        self.update_order_display()
 
-    def remove_item(self):
-        selected = self.tree_order.selection()
-        if not selected: return
-        idx = self.tree_order.index(selected[0])
-        self.current_order.pop(idx)
-        self.update_order_table()
+    def remove_single_item(self, idx):
+        self.controller.remove_item(idx)
+        self.update_order_display()
 
-    def save_order_and_serve(self):
-        if not self.table: return
+    def open_transfer_dialog(self):
+        """Hộp thoại popup chọn bàn để chuyển sang"""
+        dialog = tk.Toplevel(self)
+        dialog.title("Chuyển Bàn")
+        dialog.geometry("320x180")
+        dialog.configure(bg="white")
+        dialog.grab_set()
 
-        self.table.orders = self.current_order
-        self.table.status = "Đang phục vụ"
-        if not getattr(self.table, 'start_time', None):
-            self.table.start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        tk.Label(dialog, text="Chọn bàn muốn chuyển đến:", font=("Segoe UI", 10, "bold"), bg="white", fg="#2c3e50").pack(pady=(15, 5))
 
-        self.save_tables_to_json()
-        messagebox.showinfo("Thành công", f"Đã lưu Oder và chuyển {self.table.name} sang trạng thái 'Đang phục vụ'!")
-        if self.on_close:
-            self.on_close()
+        table_options = []
+        try:
+            t_path = self.controller._get_tables_file_path()
+            if os.path.exists(t_path):
+                import json
+                with open(t_path, "r", encoding="utf-8") as f:
+                    all_tables = json.load(f)
+                
+                current_name = getattr(self.table, "name", str(self.table))
+                for t in all_tables:
+                    t_name = str(t.get("name", "")).strip()
+                    t_status = str(t.get("status", "")).strip()
+                    if t_name != current_name and t_status != "Đang phục vụ":
+                        table_options.append(t_name)
+        except Exception as e:
+            print("Lỗi lấy danh sách bàn:", e)
+
+        combo_target = ttk.Combobox(dialog, values=table_options, font=("Segoe UI", 10), state="readonly")
+        combo_target.pack(fill="x", padx=20, pady=10)
+        if table_options:
+            combo_target.current(0)
+
+        def confirm_transfer():
+            target_name = combo_target.get().strip()
+            if not target_name:
+                messagebox.showwarning("Cảnh báo", "Vui lòng chọn bàn đích hợp lệ!")
+                return
+            
+            success, msg = self.controller.transfer_table(target_name)
+            if success:
+                messagebox.showinfo("Thành công", msg)
+                dialog.destroy()
+                if self.on_close:
+                    self.on_close()
+            else:
+                messagebox.showerror("Lỗi", msg)
+
+        tk.Button(
+            dialog, text="Xác nhận chuyển", bg="#e67e22", fg="white",
+            font=("Segoe UI", 10, "bold"), relief="flat", padx=10, pady=6, cursor="hand2",
+            command=confirm_transfer
+        ).pack(pady=10)
 
     def checkout(self):
-        if not self.current_order:
-            messagebox.showwarning("Cảnh báo", "Chưa có món ăn nào trong hóa đơn!")
+        success, msg = self.controller.checkout()
+        if not success:
+            messagebox.showwarning("Cảnh báo", msg)
             return
 
-        total_amount = sum(it["total"] for it in self.current_order)
-        
-        if messagebox.askyesno("Xác nhận thanh toán", f"Tổng tiền cần thanh toán: {total_amount:,} VNĐ.\nXác nhận thanh toán hóa đơn này?"):
-            new_bill = {
-                "id": f"BILL-{str(uuid.uuid4().hex)[:6].upper()}",
-                "table_name": self.table.name if self.table else "Bàn vãng lai",
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "customer_name": "Khách vãng lai",
-                "items": self.current_order,
-                "total_amount": total_amount,
-                "payment_method": "Tiền mặt",
-                "status": "Hoàn tất"
-            }
-
-            bills = []
-            if os.path.exists(self.BILL_FILE):
-                try:
-                    with open(self.BILL_FILE, "r", encoding="utf-8") as f:
-                        bills = json.load(f)
-                except: pass
-            
-            bills.append(new_bill)
-            try:
-                with open(self.BILL_FILE, "w", encoding="utf-8") as f:
-                    json.dump(bills, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Lỗi lưu hóa đơn: {e}")
-
-            if self.table:
-                self.table.status = "Trống"
-                self.table.orders = []
-                self.table.start_time = None
-                self.save_tables_to_json()
-
-            messagebox.showinfo("Thành công", f"Thanh toán thành công hóa đơn {new_bill['id']}!")
-            if self.on_close:
-                self.on_close()
-
-    def save_tables_to_json(self):
-        if not os.path.exists(self.TABLE_FILE): return
-        try:
-            with open(self.TABLE_FILE, "r", encoding="utf-8") as f:
-                tables_data = json.load(f)
-
-            for t in tables_data:
-                if t.get("id") == self.table.id or t.get("name") == self.table.name:
-                    t["status"] = self.table.status
-                    t["orders"] = self.table.orders
-                    t["start_time"] = getattr(self.table, 'start_time', None)
-                    break
-
-            with open(self.TABLE_FILE, "w", encoding="utf-8") as f:
-                json.dump(tables_data, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Lỗi cập nhật file tables.json: {e}")
-
-    @staticmethod
-    def open_booking_dialog(table, tables_list, refresh_callback, parent_view):
-        if hasattr(parent_view, 'open_embedded_order_view'):
-            parent_view.open_embedded_order_view(table)
+        messagebox.showinfo("Thành công", f"Thanh toán thành công hóa đơn {msg}!")
+        if self.on_close:
+            self.handle_close()

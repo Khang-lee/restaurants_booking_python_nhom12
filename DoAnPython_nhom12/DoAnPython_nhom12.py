@@ -4,7 +4,9 @@ import sys
 import tkinter as tk
 from PIL import Image, ImageTk
 
+# Đảm bảo nhận diện đường dẫn gốc của dự án
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from services.auth_service import AuthService
 from services.data_manager import DataManager
 from ui.dialogs.login_dialog import LoginDialog
@@ -29,14 +31,17 @@ class RestaurantApp(tk.Tk):
         # 3. Nạp và chỉnh kích thước Icon
         self.set_custom_icon_size(width=64, height=64)
 
-        # 4. Khởi tạo các dịch vụ
+        # 4. Khởi tạo các dịch vụ cốt lõi
         self.data_manager = DataManager()
         self.auth_service = AuthService(self.data_manager)
+        
+        # (Tùy chọn) Khởi tạo booking_service nếu dự án của bạn có quản lý service này
+        self.booking_service = None 
 
         # 5. Sự kiện đóng ứng dụng
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # 6. Mở màn hình Login (Dùng try-except để bắt lỗi nếu có sự cố render UI)
+        # 6. Mở màn hình Login
         try:
             self.login_frame = LoginDialog(self, self.auth_service, self.show_main_app)
             self.login_frame.pack(fill="both", expand=True)
@@ -59,16 +64,21 @@ class RestaurantApp(tk.Tk):
                 print(f"Lỗi nạp icon: {e}")
 
     def show_main_app(self, user=None):
+        """Chuyển từ màn hình Đăng nhập sang Màn hình chính (MainView)"""
         if hasattr(self, "login_frame") and self.login_frame:
             self.login_frame.pack_forget()
+            self.login_frame.destroy()
+            self.login_frame = None
 
         if hasattr(self, "main_view") and self.main_view:
             self.main_view.destroy()
 
+        # Khởi tạo và đưa MainView lên hiển thị
         self.main_view = MainView(self, current_user=user)
         self.main_view.pack(fill="both", expand=True)
 
     def on_closing(self):
+        """Xử lý khi tắt hẳn ứng dụng"""
         try:
             self.destroy()
         except Exception:

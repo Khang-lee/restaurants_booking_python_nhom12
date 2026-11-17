@@ -1,10 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-
-# Import FloorplanView từ đường dẫn dự án
 from ui.views.floorplan_view import FloorplanView
+# Import MainController để tách biệt logic
+from controllers.main_controller import MainController
 
-# Tải hoặc tự tạo class giả lập nếu chưa có file booking_list_view
 try:
     from ui.views.booking_list_view import BookingListView
 except (ImportError, ModuleNotFoundError):
@@ -21,9 +20,6 @@ except (ImportError, ModuleNotFoundError):
                 fg="#7f8c8d",
             ).pack(expand=True, pady=50)
 
-# ==============================================================
-# SỬA LẠI IMPORT CHUẨN XÁC TÊN FILE: billlistview
-# ==============================================================
 try:
     from ui.views.bill_list_view import BillListView
 except (ImportError, ModuleNotFoundError):
@@ -39,8 +35,6 @@ except (ImportError, ModuleNotFoundError):
                 fg="#7f8c8d",
             ).pack(expand=True, pady=50)
 
-
-# Tải hoặc tự tạo class giả lập nếu chưa có file report_view
 try:
     from ui.views.report_view import ReportView
 except (ImportError, ModuleNotFoundError):
@@ -61,14 +55,14 @@ class MainView(tk.Frame):
     def __init__(self, parent, current_user=None):
         super().__init__(parent)
 
+        # Khởi tạo Controller xử lý logic thông báo
+        self.controller = MainController(self)
+
         # 1. Khởi tạo đối tượng user
         if isinstance(current_user, dict):
             self.current_user = current_user
         else:
-            # Nếu truyền vào là string hoặc None
             user_str = str(current_user or "").strip()
-
-            # Lấy danh sách users từ DataManager của ứng dụng chính (nếu có)
             data_mgr = getattr(self.master, "data_manager", None)
             matched_user = None
 
@@ -82,7 +76,6 @@ class MainView(tk.Frame):
             if matched_user:
                 self.current_user = matched_user
             else:
-                # Kiểm tra tương đối nếu không tìm thấy trong DB
                 is_admin = "quanly" in user_str.lower() or "quản lý" in user_str.lower()
                 self.current_user = {
                     "username": user_str if user_str else "guest",
@@ -140,7 +133,6 @@ class MainView(tk.Frame):
         )
         self.btn_booking.pack(fill="x", padx=10, pady=4, ipady=5)
 
-        # NÚT MỚI: QUẢN LÝ BILL BÀN
         self.btn_bill = tk.Button(
             sidebar,
             text="🧾  Bill bàn / Hóa đơn",
@@ -155,7 +147,6 @@ class MainView(tk.Frame):
         )
         self.btn_bill.pack(fill="x", padx=10, pady=4, ipady=5)
 
-        # PHÂN QUYỀN GIAO DIỆN: Kiểm tra trực tiếp "Quản lý"
         if self.role == "Quản lý":
             self.btn_report = tk.Button(
                 sidebar,
@@ -206,15 +197,33 @@ class MainView(tk.Frame):
 
         self.show_view("floorplan")
 
+        # Kích hoạt hệ thống lắng nghe thông báo định kỳ chạy ngầm ở màn hình chính
+        self.start_booking_reminder_loop()
+
+    def start_booking_reminder_loop(self):
+        """Hàm View gọi định kỳ mỗi 30 giây để lấy dữ liệu từ Controller và hiển thị popup"""
+        if self.winfo_exists():
+            notifications = self.controller.get_upcoming_bookings()
+            for item in notifications:
+                messagebox.showwarning(
+                    "🔔 NHẮC NHỞ LỊCH ĐẶT BÀN SẮP TỚI",
+                    f"Phát hiện bàn sắp có khách đến nhận bàn!\n\n"
+                    f"• Bàn: {item['table_id']}\n"
+                    f"• Khách hàng: {item['customer_name']} (SĐT: {item['customer_phone']})\n"
+                    f"• Số lượng: {item['guest_count']} khách\n"
+                    f"• Giờ hẹn: {item['booking_time']}\n\n"
+                    f"⏱️ Còn khoảng {item['diff_mins']} phút nữa tới giờ hẹn!"
+                )
+            # Lặp lại sau mỗi 30 giây (30000 ms)
+            self.after(30000, self.start_booking_reminder_loop)
+
     def show_view(self, view_name):
-        # Reset màu tất cả các nút
         self.btn_floorplan.config(bg="#34495e", font=("Segoe UI", 10))
         self.btn_booking.config(bg="#34495e", font=("Segoe UI", 10))
         self.btn_bill.config(bg="#34495e", font=("Segoe UI", 10))
         if hasattr(self, "btn_report"):
             self.btn_report.config(bg="#34495e", font=("Segoe UI", 10))
 
-        # Highlight nút đang được chọn
         if view_name == "floorplan":
             self.btn_floorplan.config(bg="#16a085", font=("Segoe UI", 10, "bold"))
         elif view_name == "booking":
@@ -224,7 +233,6 @@ class MainView(tk.Frame):
         elif view_name == "report" and hasattr(self, "btn_report"):
             self.btn_report.config(bg="#16a085", font=("Segoe UI", 10, "bold"))
 
-        # Hiển thị View tương ứng
         for key, view in self.views.items():
             if key == view_name:
                 view.pack(fill="both", expand=True)
@@ -235,20 +243,21 @@ class MainView(tk.Frame):
 
     def handle_logout(self):
         if messagebox.askyesno("Xác nhận", "Bạn có chắc chắn muốn đăng xuất?"):
-            self.pack_forget()
+            # 1. Khởi tạo lại màn hình Đăng nhập trên cửa sổ chính (RestaurantApp)
+            try:
+                from ui.dialogs.login_dialog import LoginDialog
+                from services.auth_service import AuthService
+                from services.data_manager import DataManager
 
-            login_widget = getattr(
-                self.master,
-                "login_frame",
-                getattr(self.master, "login_dialog", None),
-            )
+                # Lấy hoặc khởi tạo lại các service từ cửa sổ gốc
+                data_mgr = getattr(self.master, "data_manager", DataManager())
+                auth_svc = getattr(self.master, "auth_service", AuthService(data_mgr))
 
-            if login_widget:
-                login_widget.pack(fill="both", expand=True)
-                if hasattr(login_widget, "txt_username"):
-                    login_widget.txt_username.delete(0, tk.END)
-                if hasattr(login_widget, "txt_password"):
-                    login_widget.txt_password.delete(0, tk.END)
-                    login_widget.txt_username.focus()
+                # Tạo mới khung đăng nhập và hiển thị lên cửa sổ chính
+                self.master.login_frame = LoginDialog(self.master, auth_svc, self.master.show_main_app)
+                self.master.login_frame.pack(fill="both", expand=True)
+            except Exception as e:
+                print(f"Lỗi khi quay lại màn hình đăng nhập: {e}")
 
+            # 2. Hủy hoàn toàn MainView hiện tại
             self.destroy()

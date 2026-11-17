@@ -3,7 +3,7 @@ class Table:
         self.id = id
         self.name = name
         self.area = area
-        self.capacity = capacity
+        self.capacity = capacity  # Số lượng khách tối đa của bàn (4, 6, 8, 10 người)
         self.status = status  # Trống, Đã đặt, Đang phục vụ
         self.x = x
         self.y = y

@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "table_id": "Bàn 01",
+    "customer_name": "123",
+    "customer_phone": "123123",
+    "booking_date": "2026-11-16",
+    "booking_time": "19:30",
+    "guest_count": 1,
+    "status": "Đã hoàn thành",
+    "pre_orders": [],
+    "deposit_amount": 0,
+    "booking_id": "BB72E2"
+  },
+  {
+    "table_id": "Bàn 01",
+    "customer_name": "kh",
+    "customer_phone": "123123",
+    "booking_date": "2026-11-17",
+    "booking_time": "18:00",
+    "guest_count": 1,
+    "status": "Đã hoàn thành",
+    "pre_orders": [],
+    "deposit_amount": 0,
+    "booking_id": "B78226"
+  },
+  {
+    "table_id": "Bàn 01",
+    "customer_name": "1",
+    "customer_phone": "1",
+    "booking_date": "2026-11-17",
+    "booking_time": "12:30",
+    "guest_count": 1,
+    "status": "Đã hoàn thành",
+    "pre_orders": [],
+    "deposit_amount": 0,
+    "booking_id": "BA02DC"
+  },
+  {
+    "booking_id": "B78A1E",
+    "table_id": "Bàn 01",
+    "customer_name": "1",
+    "customer_phone": "1",
+    "booking_date": "2026-11-17",
+    "booking_time": "13:30",
+    "guest_count": 2,
+    "status": "Đã hoàn thành",
+    "pre_orders": [],
+    "deposit_amount": 0
+  },
+  {
+    "booking_id": "BD9B06",
+    "table_id": "Bàn 01",
+    "customer_name": "1",
+    "customer_phone": "1",
+    "booking_date": "2026-11-17",
+    "booking_time": "18:00",
+    "guest_count": 2,
+    "status": "Đã hoàn thành",
+    "pre_orders": [],
+    "deposit_amount": 0
+  },
+  {
+    "booking_id": "BF8A75",
+    "table_id": "Bàn 01",
+    "customer_name": "1",
+    "customer_phone": "1",
+    "booking_date": "2026-11-17",
+    "booking_time": "18:00",
+    "guest_count": 2,
+    "status": "Đã hoàn thành",
+    "pre_orders": [],
+    "deposit_amount": 0
+  }
+]
