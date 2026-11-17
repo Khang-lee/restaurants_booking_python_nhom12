@@ -103,3 +103,5 @@ Hệ thống hỗ trợ phân quyền người dùng giữa **Quản lý** và *
 2. **Quản lý Đặt bàn:** Kiểm tra chống trùng lịch (< 2 tiếng), tự động tính cọc (120,000 VNĐ/khách), tìm kiếm theo SĐT hoặc Ngày.
 3. **Gọi món & Xuất Bill:** Chọn món ăn có tải ảnh từ URL, tính tiền trừ cọc tự động, ghi nhận lịch sử vào `bills.json`.
 4. **Nhắc lịch & Báo cáo:** Tự động thông báo khách sắp đến trong 30 phút, thống kê doanh thu, số lượt thanh toán theo hình thức và tỷ lệ lấp đầy bàn.
+
+## 👥 6. Bảng Phân Công Công Việc Thành ViênSTTHọ và TênVai trò / Nhiệm vụ chínhCác phân hệ đảm nhậnTỷ lệ hoàn thành1Nguyễn Ngọc Lan Tường (Nhóm trưởng)• Thiết kế kiến trúc hệ thống (MVC)• Xây dựng Logic Backend & Xử lý tệp JSON• Tích hợp cơ chế bảo mật và phân quyền• Quản lý Đặt bàn (Booking)• Chuyển bàn trực tiếp & Đồng bộ JSON• Hệ thống Đăng nhập (Auth)100%2Thành viên 2 (Thay tên)• Thiết kế giao diện người dùng (UI/UX)• Lập trình các màn hình danh sách & bảng dữ liệu• Kiểm thử và xử lý ngoại lệ giao diện• Sơ đồ bàn trực quan (Floorplan)• Gọi món & Quản lý thực đơn (Order)• Quản lý Hóa đơn & Thanh toán (Bill)100%
