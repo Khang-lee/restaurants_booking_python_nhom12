@@ -21,6 +21,21 @@ except (ImportError, ModuleNotFoundError):
             ).pack(expand=True, pady=50)
 
 try:
+    from ui.views.menu_mon_view import MenuMonView
+except (ImportError, ModuleNotFoundError):
+    class MenuMonView(tk.Frame):
+        def __init__(self, parent=None, role="Lễ tân"):
+            super().__init__(parent, bg="white")
+            self.role = role
+            tk.Label(
+                self,
+                text="🍽️ MENU MÓN ĂN (TÍNH NĂNG ĐANG PHÁT TRIỂN)",
+                font=("Segoe UI", 12, "bold"),
+                bg="white",
+                fg="#7f8c8d",
+            ).pack(expand=True, pady=50)
+
+try:
     from ui.views.bill_list_view import BillListView
 except (ImportError, ModuleNotFoundError):
     class BillListView(tk.Frame):
@@ -133,6 +148,20 @@ class MainView(tk.Frame):
         )
         self.btn_booking.pack(fill="x", padx=10, pady=4, ipady=5)
 
+        self.btn_menu_mon_an = tk.Button(
+            sidebar,
+            text="🍽️Menu món ăn",
+            anchor="w",
+            padx=15,
+            command=lambda: self.show_view("menu_mon"),
+            bg="#34495e",
+            fg="white",
+            font=("Segoe UI", 10),
+            relief="flat",
+            cursor="hand2",
+        )
+        self.btn_menu_mon_an.pack(fill="x", padx=10, pady=4, ipady=5)
+
         self.btn_bill = tk.Button(
             sidebar,
             text="🧾  Bill bàn / Hóa đơn",
@@ -189,6 +218,7 @@ class MainView(tk.Frame):
                 role=self.role,
                 booking_service=booking_svc,
             ),
+            "menu_mon": MenuMonView(parent=self.container, role=self.role),
             "bill": BillListView(parent=self.container, role=self.role),
         }
 
@@ -197,29 +227,10 @@ class MainView(tk.Frame):
 
         self.show_view("floorplan")
 
-        # Kích hoạt hệ thống lắng nghe thông báo định kỳ chạy ngầm ở màn hình chính
-        self.start_booking_reminder_loop()
-
-    def start_booking_reminder_loop(self):
-        """Hàm View gọi định kỳ mỗi 30 giây để lấy dữ liệu từ Controller và hiển thị popup"""
-        if self.winfo_exists():
-            notifications = self.controller.get_upcoming_bookings()
-            for item in notifications:
-                messagebox.showwarning(
-                    "🔔 NHẮC NHỞ LỊCH ĐẶT BÀN SẮP TỚI",
-                    f"Phát hiện bàn sắp có khách đến nhận bàn!\n\n"
-                    f"• Bàn: {item['table_id']}\n"
-                    f"• Khách hàng: {item['customer_name']} (SĐT: {item['customer_phone']})\n"
-                    f"• Số lượng: {item['guest_count']} khách\n"
-                    f"• Giờ hẹn: {item['booking_time']}\n\n"
-                    f"⏱️ Còn khoảng {item['diff_mins']} phút nữa tới giờ hẹn!"
-                )
-            # Lặp lại sau mỗi 30 giây (30000 ms)
-            self.after(30000, self.start_booking_reminder_loop)
-
     def show_view(self, view_name):
         self.btn_floorplan.config(bg="#34495e", font=("Segoe UI", 10))
         self.btn_booking.config(bg="#34495e", font=("Segoe UI", 10))
+        self.btn_menu_mon_an.config(bg="#34495e", font=("Segoe UI", 10))
         self.btn_bill.config(bg="#34495e", font=("Segoe UI", 10))
         if hasattr(self, "btn_report"):
             self.btn_report.config(bg="#34495e", font=("Segoe UI", 10))
@@ -228,6 +239,8 @@ class MainView(tk.Frame):
             self.btn_floorplan.config(bg="#16a085", font=("Segoe UI", 10, "bold"))
         elif view_name == "booking":
             self.btn_booking.config(bg="#16a085", font=("Segoe UI", 10, "bold"))
+        elif view_name == "menu_mon":
+            self.btn_menu_mon_an.config(bg="#16a085", font=("Segoe UI", 10, "bold"))
         elif view_name == "bill":
             self.btn_bill.config(bg="#16a085", font=("Segoe UI", 10, "bold"))
         elif view_name == "report" and hasattr(self, "btn_report"):
@@ -238,6 +251,8 @@ class MainView(tk.Frame):
                 view.pack(fill="both", expand=True)
                 if hasattr(view, "load_data"):
                     view.load_data()
+                elif hasattr(view, "refresh_table"):
+                    view.refresh_table(notify_expired=True)
             else:
                 view.pack_forget()
 

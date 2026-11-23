@@ -1,0 +1,118 @@
+{
+  "source": "TheMealDB",
+  "api_url": "https://www.themealdb.com/api/json/v1/1/filter.php?c={category}",
+  "fetched_at": "2026-11-23 18:15:58",
+  "total": 10,
+  "items": [
+    {
+      "id": "API-53281",
+      "name": "Algerian Kefta (Meatballs)",
+      "price": 75000,
+      "category": "Món chính",
+      "note": "TheMealDB (Món chính)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/8rfd4q1764112993.jpg"
+    },
+    {
+      "id": "API-53085",
+      "name": "15-minute chicken & halloumi burgers",
+      "price": 80000,
+      "category": "Món chính",
+      "note": "TheMealDB (Món chính)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/vdwloy1713225718.jpg"
+    },
+    {
+      "id": "API-53483",
+      "name": "Acaraje black-eyed pea fritters with shrimp filling",
+      "price": 85000,
+      "category": "Món chính",
+      "note": "TheMealDB (Món chính)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/dxs5t71782678369.jpg"
+    },
+    {
+      "id": "API-52839",
+      "name": "Chilli prawn linguine",
+      "price": 90000,
+      "category": "Món chính",
+      "note": "TheMealDB (Món chính)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/usywpp1511189717.jpg"
+    },
+    {
+      "id": "API-52885",
+      "name": "Bubble & Squeak",
+      "price": 95000,
+      "category": "Món chính",
+      "note": "TheMealDB (Món chính)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/xusqvw1511638311.jpg"
+    },
+    {
+      "id": "API-53527",
+      "name": "Achiote Oil (Aceite Achiotado) Recipe",
+      "price": 100000,
+      "category": "Lẩu",
+      "note": "TheMealDB (Lẩu)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/iuws3q1783801530.jpg"
+    },
+    {
+      "id": "API-53158",
+      "name": "Air fryer patatas bravas",
+      "price": 105000,
+      "category": "Khai vị",
+      "note": "TheMealDB (Khai vị)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/3m8yae1763257951.jpg"
+    },
+    {
+      "id": "API-53169",
+      "name": "Ajo blanco",
+      "price": 110000,
+      "category": "Khai vị",
+      "note": "TheMealDB (Khai vị)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/5jdtie1763289302.jpg"
+    },
+    {
+      "id": "API-53373",
+      "name": "Air Fryer Egg Rolls",
+      "price": 115000,
+      "category": "Khai vị",
+      "note": "TheMealDB (Khai vị)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/grhn401765687086.jpg"
+    },
+    {
+      "id": "API-53120",
+      "name": "Æbleskiver",
+      "price": 120000,
+      "category": "Tráng miệng",
+      "note": "TheMealDB (Tráng miệng)",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/wkhg581762773124.jpg"
+    }
+  ]
+}

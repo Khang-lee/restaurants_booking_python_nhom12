@@ -1,0 +1,118 @@
+{
+  "source": "TheMealDB API",
+  "api_url": "https://www.themealdb.com/api/json/v1/1/search.php?s=chicken",
+  "fetched_at": "2026-11-23 17:56:31",
+  "total": 10,
+  "items": [
+    {
+      "id": "API-52795",
+      "name": "Chicken Handi",
+      "price": 75000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
+    },
+    {
+      "id": "API-53358",
+      "name": "Chicken Mandi",
+      "price": 80000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/er4d081765186828.jpg"
+    },
+    {
+      "id": "API-53110",
+      "name": "Sticky Chicken",
+      "price": 85000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/cj56fs1762340001.jpg"
+    },
+    {
+      "id": "API-52956",
+      "name": "Chicken Congee",
+      "price": 90000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/1529446352.jpg"
+    },
+    {
+      "id": "API-52831",
+      "name": "Chicken Karaage",
+      "price": 95000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/tyywsw1505930373.jpg"
+    },
+    {
+      "id": "API-52920",
+      "name": "Chicken Marengo",
+      "price": 100000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/qpxvuq1511798906.jpg"
+    },
+    {
+      "id": "API-53164",
+      "name": "Spanish Chicken",
+      "price": 105000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/pqulvm1763282839.jpg"
+    },
+    {
+      "id": "API-52806",
+      "name": "Tandoori chicken",
+      "price": 110000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/qptpvt1487339892.jpg"
+    },
+    {
+      "id": "API-52850",
+      "name": "Chicken Couscous",
+      "price": 115000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/qxytrx1511304021.jpg"
+    },
+    {
+      "id": "API-52945",
+      "name": "Kung Pao Chicken",
+      "price": 120000,
+      "category": "Món ăn",
+      "note": "Nguồn API tham khảo",
+      "evaluate": "4.5",
+      "number": 0,
+      "expiration_date": "",
+      "image": "https://www.themealdb.com/images/media/meals/1525872624.jpg"
+    }
+  ]
+}
